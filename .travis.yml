@@ -1,0 +1,41 @@
+language: c
+os: linux
+dist: bionic
+
+jobs:
+  include:
+    - os: linux
+      env:
+        - HOST="x86_64"
+    - os: linux
+      env:
+        - HOST="i686"
+
+script:
+  ci/build.sh ${HOST}
+
+install:
+  ci/install.sh
+
+
+
+before_deploy:
+  - git config --local user.name "Antonino Natale"
+  - git config --local user.email "antonio.natale97@hotmail.com"
+  - export TRAVIS_TAG=v0.6.$(date +'%Y%m%d')
+  - git tag $TRAVIS_TAG
+
+deploy:
+  provider: releases
+  token:
+    "$GH_TOKEN"
+  file:
+    ${HOST}-aplus-musl.tar.xz
+
+  overwrite: true
+  draft: false
+  edge: true
+
+  on:
+    repo: kwrx/aplus-musl
+    tags: false
