@@ -32,7 +32,7 @@ pushd build-musl
     make -j2 DESTDIR="$(pwd)/toolchain" install                          || exit_and_clean 1
 
     # Test
-    echo "int main() {return 0;}" | $host-aplus-gcc -x c -               || exit_and_clean 1
+    #echo "int main() {return 0;}" | $host-aplus-gcc -x c -               || exit_and_clean 1
 
     # Release
     make -j2 DESTDIR="$(pwd)/release" install                            || exit_and_clean 1
