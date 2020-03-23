@@ -21,8 +21,10 @@ popd
 pushd build-musl
 
     export PATH="$PATH:$(pwd)/toolchain/bin"
+    export CC=$host-aplus-gcc
+    export CC_FOR_BUILD=$CC
 
-
+    
     ../configure --host=$host-aplus --prefix=                            || exit_and_clean 1
 
     # Build
