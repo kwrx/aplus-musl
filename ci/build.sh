@@ -8,7 +8,7 @@ mkdir -p build-musl/release
 
 
 exit_and_clean() {
-    rm -rf build-musl
+    #rm -rf build-musl
     exit $1
 }
 
@@ -29,19 +29,24 @@ pushd build-musl
 
     # Build
     make -j2 CFLAGS="-g -O2"                                             || exit_and_clean 1
-    make -j2 DESTDIR="$(pwd)/toolchain" install                          || exit_and_clean 1
+    make -j2 DESTDIR="$(pwd)/toolchain/$host-aplus" install              || exit_and_clean 1
 
-    # Fix crt0.o
-    ln -s crt1.o $(pwd)/toolchain/lib/crt0.0
+    # Fix crt0.o, libc.so
+    ln -s crt1.o $(pwd)/toolchain/$host-aplus/lib/crt0.o
+    rm $(pwd)/release/$host-aplus/lib/ld-musl-$host.so.1
+    rm $(pwd)/toolchain/$host-aplus/lib/libc.so
 
     # Test
-    #echo "int main() {return 0;}" | $host-aplus-gcc -x c -               || exit_and_clean 1
+    echo "int main() {return 0;}" | $host-aplus-gcc -x c -               || exit_and_clean 1
 
     # Release
-    make -j2 DESTDIR="$(pwd)/release" install                            || exit_and_clean 1
+    make -j2 DESTDIR="$(pwd)/release/$host-aplus" install                || exit_and_clean 1
 
-    # Fix crt0.o
-    ln -s crt1.o $(pwd)/release/lib/crt0.0
+    # Fix crt0.o, libc.so
+    ln -s crt1.o $(pwd)/release/$host-aplus/lib/crt0.o
+    rm $(pwd)/release/$host-aplus/lib/ld-musl-$host.so.1
+    ln -s /lib/ld-musl-$host.so $(pwd)/release/$host-aplus/lib/ld-musl-$host.so.1
+    mv $(pwd)/release/$host-aplus/lib/libc.so $(pwd)/release/$host-aplus/lib/ld-musl-$host.so
     
 popd
 
