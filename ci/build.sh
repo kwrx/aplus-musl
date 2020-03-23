@@ -31,11 +31,17 @@ pushd build-musl
     make -j2 CFLAGS="-g -O2"                                             || exit_and_clean 1
     make -j2 DESTDIR="$(pwd)/toolchain" install                          || exit_and_clean 1
 
+    # Fix crt0.o
+    ln -s crt1.o $(pwd)/toolchain/lib/crt0.0
+
     # Test
     #echo "int main() {return 0;}" | $host-aplus-gcc -x c -               || exit_and_clean 1
 
     # Release
     make -j2 DESTDIR="$(pwd)/release" install                            || exit_and_clean 1
+
+    # Fix crt0.o
+    ln -s crt1.o $(pwd)/release/lib/crt0.0
     
 popd
 
