@@ -1,3 +1,13 @@
+## 0.2.0 (2026-10-11)
+
+### Feat
+
+- add initial Commitizen configuration for conventional commits
+
+### Fix
+
+- remove quiet flag from wget command for better visibility during toolchain download
+
 ## 0.1.0 (2026-10-11)
 
 ### Feat
