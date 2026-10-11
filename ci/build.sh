@@ -1,61 +1,60 @@
 #!/bin/bash
+set -e
 
-host=$1
+ROOTDIR=$(pwd)
+BUILDDIR=$(pwd)/build-musl
+INSTALLDIR=$(pwd)/build-musl/release
 
-mkdir -p build-musl
-mkdir -p build-musl/toolchain
-mkdir -p build-musl/release
+TARGET=${1:-x86_64}
+HOST=${2:-$(gcc -dumpmachine)}
+TOOLCHAIN_VERSION=${3:-0.1.0}
 
-
-exit_and_clean() {
-    #rm -rf build-musl
-    exit $1
+cleanup() {
+    echo "> Cleaning up build directories..."
+    rm -rf $BUILDDIR
 }
 
+trap cleanup EXIT
 
-pushd build-musl/toolchain
-    wget https://github.com/kwrx/aplus-toolchain/releases/latest/download/$host-aplus-toolchain-nocxx.tar.xz || exit_and_clean 1
-    tar -xJf $host-aplus-toolchain-nocxx.tar.xz || exit_and_clean 1
+mkdir -p $BUILDDIR
+mkdir -p $BUILDDIR/toolchain
+mkdir -p $BUILDDIR/release
+
+pushd $BUILDDIR/toolchain
+    if [ ! -f $TARGET-aplus-toolchain-nocxx-$HOST.tar.xz ]; then
+        echo "> Downloading toolchain for $TARGET-aplus..."
+        wget -q https://github.com/kwrx/aplus-toolchain/releases/download/$TOOLCHAIN_VERSION/$TARGET-aplus-toolchain-nocxx-$HOST.tar.xz
+    fi
+    tar xJf $TARGET-aplus-toolchain-nocxx-$HOST.tar.xz
 popd
 
-pushd build-musl
+pushd $BUILDDIR
 
     export PATH="$PATH:$(pwd)/toolchain/bin"
-    export CC=$host-aplus-gcc
+    export CC=$TARGET-aplus-gcc
     export CC_FOR_BUILD=$CC
 
-    
-    ../configure --host=$host-aplus --prefix=                            || exit_and_clean 1
+    echo "> Configuring musl for $TARGET-aplus..."
+    ../configure --host=$TARGET-aplus --prefix= --disable-shared --enable-static
 
-    # Build
-    make -j2 CFLAGS="-g -O2"                                             || exit_and_clean 1
-    make -j2 DESTDIR="$(pwd)/toolchain/$host-aplus" install              || exit_and_clean 1
+    echo "> Building musl for $TARGET-aplus..."
+    make -j$CPUS CFLAGS="-O2"
+    make -j$CPUS DESTDIR="$INSTALLDIR/$TARGET-aplus" install
 
-    # Fix crt0.o, libc.so
-    ln -s crt1.o $(pwd)/toolchain/$host-aplus/lib/crt0.o
-    rm $(pwd)/release/$host-aplus/lib/ld-musl-$host.so.1
-    rm $(pwd)/toolchain/$host-aplus/lib/libc.so
-
-    # Test
-    echo "int main() {return 0;}" | $host-aplus-gcc -x c -               || exit_and_clean 1
-
-    # Release
-    make -j2 DESTDIR="$(pwd)/release/$host-aplus" install                || exit_and_clean 1
-
-    # Fix crt0.o, libc.so
-    ln -s crt1.o $(pwd)/release/$host-aplus/lib/crt0.o
-    rm $(pwd)/release/$host-aplus/lib/ld-musl-$host.so.1
-    ln -s /lib/ld-musl-$host.so $(pwd)/release/$host-aplus/lib/ld-musl-$host.so.1
-    mv $(pwd)/release/$host-aplus/lib/libc.so $(pwd)/release/$host-aplus/lib/ld-musl-$host.so
+    echo "> Fixing symlink for ld-musl-$TARGET.so.1..."
+    if [ -L $INSTALLDIR/$TARGET-aplus/lib/ld-musl-$TARGET.so.1 ]; then
+        rm $INSTALLDIR/$TARGET-aplus/lib/ld-musl-$TARGET.so.1
+        ln -s ld-musl-$TARGET.so $INSTALLDIR/$TARGET-aplus/lib/ld-musl-$TARGET.so.1
+    fi
     
 popd
 
 
 
-pushd build-musl/release
-    tar -cJf $host-aplus-musl.tar.xz *    || exit_and_clean 1
-    mv $host-aplus-musl.tar.xz ../..      || exit_and_clean 1
+echo "> Creating release tarball for $TARGET-aplus..."
+pushd $INSTALLDIR
+    tar cJf $TARGET-aplus-musl.tar.xz *
+    mv $TARGET-aplus-musl.tar.xz $ROOTDIR
 popd
 
-
-exit_and_clean 0
+exit 0
