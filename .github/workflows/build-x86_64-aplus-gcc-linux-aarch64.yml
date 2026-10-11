@@ -23,7 +23,7 @@ jobs:
     - name: Build Musl
       working-directory: ${{github.workspace}}
       shell: bash
-      run: ./ci/release.sh x86_64-aplus aarch64-linux-gnu
+      run: ./ci/release.sh x86_64 aarch64-linux-gnu
       
     - uses: "marvinpinto/action-automatic-releases@latest"
       with:
