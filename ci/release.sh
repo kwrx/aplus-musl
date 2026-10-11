@@ -23,7 +23,7 @@ mkdir -p $BUILDDIR/release
 pushd $BUILDDIR/toolchain
     if [ ! -f $TARGET-aplus-toolchain-nocxx-$HOST.tar.xz ]; then
         echo "> Downloading toolchain for $TARGET-aplus..."
-        wget -q https://github.com/kwrx/aplus-toolchain/releases/download/$TOOLCHAIN_VERSION/$TARGET-aplus-toolchain-nocxx-$HOST.tar.xz
+        wget https://github.com/kwrx/aplus-toolchain/releases/download/$TOOLCHAIN_VERSION/$TARGET-aplus-toolchain-nocxx-$HOST.tar.xz
     fi
     tar xJf $TARGET-aplus-toolchain-nocxx-$HOST.tar.xz
 popd
