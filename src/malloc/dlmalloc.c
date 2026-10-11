@@ -29,44 +29,15 @@
 #include <errno.h>
 #include "libc.h"
 
-
 extern void *sbrk(intptr_t inc);
 
-
-
-
-#define HAVE_MORECORE                       1
-#define HAVE_MMAP                           0
-#define HAVE_MREMAP                         0
-
-#define USE_BUILTIN_FFS                     0
-
-#define MORECORE_CANNOT_TRIM                1
-#define ABORT_ON_ASSERT_FAILURE             1
-#define NO_MALLOC_STATS                     0
-#define REALLOC_ZERO_BYTES_FREES            1
-#define MMAP_CLEARS                         0
-#define MALLOC_ALIGNMENT                    16
-
-
-#define MALLOC_FAILURE_ACTION               \
-    errno = ENOMEM;
-
-#define malloc_getpagesize                  \
-    PAGE_SIZE
-
-#define DLMALLOC_EXPORT                     \
-    weak
-
-#define MORECORE(size)                      \
-    sbrk(size)
-
-#define POINTER_UINT                        \
-    unsigned _POINTER_INT
-
-
-#define MALLOC_LOCK         ((void) 0)
-#define MALLOC_UNLOCK       ((void) 0)
-
+#define USE_LOCKS               1
+#define USE_SPIN_LOCKS          0
+#define USE_RECURSIVE_LOCKS     1
+#define LOCK_AT_FORK            1
+#define HAVE_MORECORE           1
+#define HAVE_MMAP               0
+#define HAVE_MREMAP             0
+#define USE_BUILTIN_FFS         1
 
 #include "dlmalloc.h"
