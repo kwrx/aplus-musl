@@ -1,3 +1,9 @@
+## 0.2.1 (2026-10-11)
+
+### Fix
+
+- correct argument for release script in build workflows
+
 ## 0.2.0 (2026-10-11)
 
 ### Feat
