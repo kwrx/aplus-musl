@@ -44,6 +44,7 @@ hidden void __funcs_on_exit(void);
 hidden void __funcs_on_quick_exit(void);
 hidden void __libc_exit_fini(void);
 hidden void __fork_handler(int);
+hidden void __malloc_atfork(int);
 
 extern hidden size_t __hwcap;
 extern hidden size_t __sysinfo;

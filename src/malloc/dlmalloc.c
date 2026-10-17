@@ -34,10 +34,23 @@ extern void *sbrk(intptr_t inc);
 #define USE_LOCKS               1
 #define USE_SPIN_LOCKS          0
 #define USE_RECURSIVE_LOCKS     1
-#define LOCK_AT_FORK            1
+#define LOCK_AT_FORK            0
 #define HAVE_MORECORE           1
 #define HAVE_MMAP               0
 #define HAVE_MREMAP             0
 #define USE_BUILTIN_FFS         1
 
 #include "dlmalloc.h"
+
+/**
+ * @brief Holds the heap lock across fork(), so the child never inherits it mid-update.
+ * @param who -1 before the fork, 0 in the parent, 1 in the child.
+ */
+void __malloc_atfork(int who) {
+    if (who < 0)
+        ACQUIRE_LOCK(&gm->mutex);
+    else if (who == 0)
+        RELEASE_LOCK(&gm->mutex);
+    else
+        INITIAL_LOCK(&gm->mutex);
+}

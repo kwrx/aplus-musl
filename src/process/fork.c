@@ -10,6 +10,7 @@ static void dummy(int x)
 }
 
 weak_alias(dummy, __fork_handler);
+weak_alias(dummy, __malloc_atfork);
 
 pid_t fork(void)
 {
@@ -17,6 +18,7 @@ pid_t fork(void)
 	sigset_t set;
 	__fork_handler(-1);
 	__block_all_sigs(&set);
+	__malloc_atfork(-1);
 #ifdef SYS_fork
 	ret = __syscall(SYS_fork);
 #else
@@ -31,6 +33,7 @@ pid_t fork(void)
 		__thread_list_lock = 0;
 		libc.threads_minus_1 = 0;
 	}
+	__malloc_atfork(!ret);
 	__restore_sigs(&set);
 	__fork_handler(!ret);
 	return __syscall_ret(ret);
